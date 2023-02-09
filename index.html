@@ -168,18 +168,15 @@
             }
 
             t.analize = function(){
-                // console.log(t.pickedCards);
 
                 const patterned = t.pickedCards.sort((a, b) => +splitTxt(a, 1) - +splitTxt(b, 1));
                 const orderedNum = t.pickedCards.sort((a, b) => +splitTxt(a, 0) - +splitTxt(b, 0));
-
-                // console.log(patterned);
-                console.log(orderedNum);
 
                 const overlapNum = {};  //페어처리
                 const samePattern = {};
 
                 let isPair = false;
+                let OverPair = 0;
                 let isflush = false;
                 let isFourCard = false;
                 let isTriple = false;
@@ -190,33 +187,41 @@
                 let score2 = 0; //모양
 
 
-                let straightChk = 0;
-                const straightArr = [];
-                for(let i = 0; i < orderedNum.length; i++){
-                    if(i == orderedNum.length - 1){
-                        break;
-                    }
-                    
-                    if(+splitTxt(orderedNum[i], 0) == (+splitTxt(orderedNum[i + 1], 0) - 1)){
-                        straightChk++;
-                        straightArr.push(orderedNum[i]);
-                    } else if(splitTxt(orderedNum[i], 0) != +splitTxt(orderedNum[i + 1], 0) && splitTxt(orderedNum[i], 0) != (+splitTxt(orderedNum[i + 1], 0) - 1)){
-                        straightChk = 0;
-                        straightArr.length = 0;
-                    }
+                const storageArr = [];
+                let straightCnt = 0;
 
+                const a14Arr = orderedNum.filter(a => a >= 14);
+                let a2Arr = [];
+                if(a14Arr.length) a2Arr = a14Arr.map(a => String(((a * 100) - (13 * 100)) / 100));
+                const finalArr = [...a2Arr, ...orderedNum];
+
+                // console.log(finalArr);
+
+                for(let i = 0; i < finalArr.length; i++){
+                    const lastEl = storageArr[storageArr.length - 1];
+
+                    if(storageArr.length == 0 || parseInt(lastEl) == parseInt(finalArr[i]) || parseInt(lastEl) - parseInt(finalArr[i]) == -1){
+                        if(parseInt(lastEl) - parseInt(finalArr[i]) == -1) straightCnt++;
+
+                        storageArr.push(finalArr[i]);
+                    }else{
+                        if(straightCnt < 4){
+                            straightCnt = 0;
+                            storageArr.length = 0;
+                            storageArr.push(finalArr[i]);
+                        }
+                    }
                 }
 
-
-
-                t.pickedCards.forEach(function(card){
-                    const num = +splitTxt(card, 0);
-                    const patternNum = +splitTxt(card, 1);
+                for(let i = 0; i < orderedNum.length; i++){
+                    const num = +splitTxt(orderedNum[i], 0);
+                    const patternNum = +splitTxt(orderedNum[i], 1);
 
                     //페어처리
                     if(overlapNum[num]){
                         overlapNum[num]++;
                         isPair = true;
+                        OverPair++;
                         if(overlapNum[num] > 2 && !isTriple) isTriple = true;
                         if(overlapNum[num] > 3) {
                             score1 = num;
@@ -233,10 +238,10 @@
                     }else{
                         samePattern[patternNum] = 1;
                     }
-                });
+                }
 
-                // console.log(overlapNum);
-                // console.log(samePattern);
+                //이공간에 스티플 백스티플 로티플 입력
+
 
                 if(isFourCard){
                     finalScore = baseScore.fourCard + +score1;
@@ -261,26 +266,46 @@
                     return;
                 }
                 if(isflush){ //플러쉬
-                    console.log('플러쉬!');
+                    t.result('플러쉬');
+                    return;
                 }
-
-                if(straightChk === 4){
-                    console.log('스트레이트');
-                }
-
-                if(isPair){ //원페어 이상
-                    console.log('원페어 이상!');
-                }else{  //탑
-
-                }
-
                 
+                if(straightCnt > 3){
+                    if(storageArr[storageArr] >= 14){
+                        t.result('마운틴');
+                    }else if(storageArr[storageArr] >= 1){
+                        t.result('백스트레이트');
+                    }else{
+                        t.result('스트레이트');
+                    }
+                    return;
+                }
+                
+                if(isPair){ //원페어 이상
+                    if(isTriple){
+                        t.result('트리플');
+                        return;    
+                    }
+                    if(OverPair > 1){
+                        t.result('투페어');
+                        return;
+                    }
+                    // console.log(overlapNum);
+                    t.result('원페어');
+                    return;
+                    
+                }else{  //탑
+                    t.result('탑');
+                }
+                return;
             }
 
             t.result = function(dd){
                 alert(dd);
             }
         }
+
+
 
         
 

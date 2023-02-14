@@ -114,11 +114,11 @@
             }
 
             t.ing = function(){
+                board.innerHTML = '';
                 const rdmNumArr = [];
                 for(let i = 0; i < 7; i++){
                     rdmNumArr.push(getRandomNum2(0, cards.length - 1, rdmNumArr));
                 }
-                board.innerHTML = '';
 
                 t.pickedCards = [
                     cards[rdmNumArr[0]],
@@ -129,6 +129,16 @@
                     cards[rdmNumArr[5]],
                     cards[rdmNumArr[6]],
                 ];
+
+                // t.pickedCards = [
+                //     '2.1',
+                //     '3.1',
+                //     '10.1',
+                //     '11.1',
+                //     '12.1',
+                //     '13.1',
+                //     '14.1',
+                // ];
 
                 t.setUI(t.pickedCards);
 
@@ -188,24 +198,34 @@
 
 
                 const storageArr = [];
+                const samePattern2 = {};
                 let straightCnt = 0;
 
                 const a14Arr = orderedNum.filter(a => a >= 14);
                 let a2Arr = [];
-                if(a14Arr.length) a2Arr = a14Arr.map(a => String(((a * 100) - (13 * 100)) / 100));
+                if(a14Arr.length) a2Arr = a14Arr.map(a => parseFloat(((a * 100) - (13 * 100)) / 100).toFixed(1));
                 const finalArr = [...a2Arr, ...orderedNum];
-
-                // console.log(finalArr);
 
                 for(let i = 0; i < finalArr.length; i++){
                     const lastEl = storageArr[storageArr.length - 1];
+                    const pattern = splitTxt(finalArr[i], 1);
 
                     if(storageArr.length == 0 || parseInt(lastEl) == parseInt(finalArr[i]) || parseInt(lastEl) - parseInt(finalArr[i]) == -1){
                         if(parseInt(lastEl) - parseInt(finalArr[i]) == -1) straightCnt++;
 
                         storageArr.push(finalArr[i]);
+
+                        if(samePattern2[pattern]) samePattern2[pattern].push(splitTxt(finalArr[i], 0));
+                        else samePattern2[pattern] = [splitTxt(finalArr[i], 0)];
+
                     }else{
                         if(straightCnt < 4){
+                            delete samePattern2[0];
+                            delete samePattern2[1];
+                            delete samePattern2[2];
+                            delete samePattern2[3];
+                            samePattern2[pattern] = [splitTxt(finalArr[i], 0)]
+
                             straightCnt = 0;
                             storageArr.length = 0;
                             storageArr.push(finalArr[i]);
@@ -241,6 +261,38 @@
                 }
 
                 //이공간에 스티플 백스티플 로티플 입력
+                const flushKey = Object.keys(samePattern2).find(key => samePattern2[key].length > 4);
+                console.log(samePattern2);
+                let straightCnt2 = 0;
+                let biggestNum = undefined;
+                let BackStraightFlushCnt = 0;
+
+                if(samePattern2[flushKey]){
+                    console.log(samePattern2[flushKey]);
+                    for(let i in samePattern2[flushKey]){
+                        const currentEl = samePattern2[flushKey][i];
+                        const nextIdx = +i + 1;
+                        const nextEl = samePattern2[flushKey][nextIdx];
+                        
+                        if(currentEl == nextIdx && nextIdx < 6) BackStraightFlushCnt++;
+                        if(!nextEl) break;
+
+                        if(currentEl - nextEl == -1){
+                            straightCnt2++;
+                            biggestNum = nextEl;
+                        }else{
+                            straightCnt2 = 0;
+                        }
+                    }
+
+                    if(straightCnt2 > 3){
+                        console.log(BackStraightFlushCnt);
+                        if(biggestNum == 14) t.result('로티플');
+                        else if(BackStraightFlushCnt == 5) t.result('백스티플');
+                        else t.result('스티플');
+                        return;
+                    }
+                };
 
 
                 if(isFourCard){

@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="./assets/css/normalize.css">
     <style>
-        .wrapper{width: 100%; max-width: 400px; margin: 0 auto; padding: 0 10px; box-sizing: border-box;}
+        .wrapper{width: 100%; max-width: 400px; margin: 0 auto; padding: 0 10px; box-sizing: border-box; min-width: 280px;}
         .btns{text-align: center;}
         .btns > button{
             width: 200px; height: 120px; font-size: 60px; outline: 0; border: 0; border-radius: 8px; display: inline-flex;
@@ -19,14 +19,16 @@
             margin-bottom: 10px;
         }
         .board > .cards{
-            border-radius: 3px; box-shadow: 1px 1px 5px #000; width: 30px; height: 50px; background: #fff; margin-right: 5px; position: relative;
-            font-size: 12px; display: flex; align-items: center; justify-content: center;
+            border-radius: 3px; box-shadow: 1px 1px 5px #000; width: 30px; height: 50px; margin-right: 5px; position: relative;
+            font-size: 12px; display: flex; align-items: center; justify-content: center; color: #fff;
+            text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #fff,
+            0 0 82px #fff, 0 0 92px #fff, 0 0 102px #fff, 0 0 151px #fff;
         }
         .board > .cards:last-child{margin-right: 0;}
         .top{position: absolute; top: 3px; left: 3px;}
         .bottom{position: absolute; bottom: 3px; right: 3px;}
-        .pattern-color0, .pattern-color3{color: #000;}
-        .pattern-color1, .pattern-color2{color: #f00;}
+        .pattern-color0, .pattern-color3{background: #333;}
+        .pattern-color1, .pattern-color2{background: #c33;}
     </style>
 </head>
 
@@ -74,7 +76,7 @@
             rotiple: 240,
         }
 
-        const patternArr = ['♠', '◆', '♥', '♣'];
+        const patternArr = ['♣', '♥', '◆', '♠'];
 
         function getRandomNum(mn, mx){return Math.floor(Math.random() * (mx - mn + 1)) + mn;};
         function getRandomNum2(mn, mx, arr){
@@ -130,15 +132,15 @@
                     cards[rdmNumArr[6]],
                 ];
 
-                // t.pickedCards = [
-                //     '2.1',
-                //     '3.1',
-                //     '10.1',
-                //     '11.1',
-                //     '12.1',
-                //     '13.1',
-                //     '14.1',
-                // ];
+                t.pickedCards = [
+                    '7.1',
+                    '8.1',
+                    '14.1',
+                    '10.1',
+                    '11.1',
+                    '13.3',
+                    '12.1',
+                ];
 
                 t.setUI(t.pickedCards);
 
@@ -178,24 +180,23 @@
             }
 
             t.analize = function(){
-
-                const patterned = t.pickedCards.sort((a, b) => +splitTxt(a, 1) - +splitTxt(b, 1));
-                const orderedNum = t.pickedCards.sort((a, b) => +splitTxt(a, 0) - +splitTxt(b, 0));
+                // const orderedNum = t.pickedCards.sort((a, b) => +splitTxt(a, 0) - +splitTxt(b, 0));
+                const orderedNum = t.pickedCards.sort((a, b) => +a - +b);
 
                 const overlapNum = {};  //페어처리
                 const samePattern = {};
 
                 let isPair = false;
-                let OverPair = 0;
+                let overPair = 0;
+                let lastPair = false;
                 let isflush = false;
+                let higherFlushNum = false;
                 let isFourCard = false;
+                let fourCardNum = false;
                 let isTriple = false;
-                let isFullHouse = false;
+                let tripleNum = false;
 
                 let finalScore = 0;
-                let score1 = 0; //숫자
-                let score2 = 0; //모양
-
 
                 const storageArr = [];
                 const samePattern2 = {};
@@ -241,10 +242,14 @@
                     if(overlapNum[num]){
                         overlapNum[num]++;
                         isPair = true;
-                        OverPair++;
-                        if(overlapNum[num] > 2 && !isTriple) isTriple = true;
+                        lastPair = orderedNum[i];
+                        overPair++;
+                        if(overlapNum[num] > 2){
+                            isTriple = true;
+                            tripleNum = orderedNum[i];
+                        }
                         if(overlapNum[num] > 3) {
-                            score1 = num;
+                            fourCardNum = orderedNum[i];
                             isFourCard = true;
                         }
                     }else{
@@ -254,21 +259,25 @@
                     //플러쉬
                     if(samePattern[patternNum]){
                         samePattern[patternNum]++;
-                        if(samePattern[patternNum] > 4) isflush = true;
+                        if(samePattern[patternNum] > 4){
+                            isflush = true;
+                            higherFlushNum = orderedNum[i];
+                        }
                     }else{
                         samePattern[patternNum] = 1;
                     }
                 }
-
-                //이공간에 스티플 백스티플 로티플 입력
+                
                 const flushKey = Object.keys(samePattern2).find(key => samePattern2[key].length > 4);
-                console.log(samePattern2);
+                // console.log(samePattern2);
                 let straightCnt2 = 0;
                 let biggestNum = undefined;
                 let BackStraightFlushCnt = 0;
 
+                console.log(samePattern2[flushKey]);
+
                 if(samePattern2[flushKey]){
-                    console.log(samePattern2[flushKey]);
+                    // console.log(samePattern2[flushKey]);
                     for(let i in samePattern2[flushKey]){
                         const currentEl = samePattern2[flushKey][i];
                         const nextIdx = +i + 1;
@@ -285,76 +294,70 @@
                         }
                     }
 
+                    
                     if(straightCnt2 > 3){
                         console.log(BackStraightFlushCnt);
-                        if(biggestNum == 14) t.result('로티플');
-                        else if(BackStraightFlushCnt == 5) t.result('백스티플');
-                        else t.result('스티플');
+                        if(biggestNum == 14) t.result('로티플', +baseScore.rotiple);
+                        else if(BackStraightFlushCnt == 5) t.result('백스티플', +baseScore.backStiple);
+                        else t.result('스티플', biggestNum);
                         return;
                     }
                 };
 
 
                 if(isFourCard){
-                    finalScore = baseScore.fourCard + +score1;
-                    t.result('포카드');
+                    t.result('포카드', baseScore.fourCard + +fourCardNum);
                     return;
                 }
-                if(isTriple){
+                if(isTriple){   //풀하우스
+                    let fullHouseCnt = 0;
                     for(let key in overlapNum){
-                        // if(overlapNum[key] !== 3 && overlapNum[key] > 1){
-                        if(overlapNum[key] === 3){
-                            score1 = key;
-                        }else{
-                            if(overlapNum[key] > 1){
-                                isFullHouse = true;
-                            }
-                        }
+                        if(overlapNum[key] > 1) fullHouseCnt++;
+                    }
+
+                    if(fullHouseCnt > 1){
+                        t.result('풀하우스', baseScore.fullHouse + +tripleNum);
+                        return;
                     }
                 }
-                if(isFullHouse){
-                    finalScore = baseScore.fullhouse + +score1;
-                    t.result('풀하우스');
-                    return;
-                }
+                
                 if(isflush){ //플러쉬
-                    t.result('플러쉬');
+                    t.result('플러쉬', baseScore.flush + +higherFlushNum);
                     return;
                 }
                 
                 if(straightCnt > 3){
-                    if(storageArr[storageArr] >= 14){
-                        t.result('마운틴');
-                    }else if(storageArr[storageArr] >= 1){
-                        t.result('백스트레이트');
-                    }else{
-                        t.result('스트레이트');
-                    }
+                    if(storageArr[storageArr.length - 1] >= 14) t.result('마운틴', baseScore.mountain);
+                    else if(storageArr[0] < 2) t.result('백스트레이트', baseScore.backStraight);
+                    else t.result('스트레이트', baseScore.straight + +storageArr[storageArr.length - 1]);
                     return;
                 }
                 
                 if(isPair){ //원페어 이상
                     if(isTriple){
-                        t.result('트리플');
+                        t.result('트리플', baseScore.triple + +tripleNum);
                         return;    
                     }
-                    if(OverPair > 1){
-                        t.result('투페어');
+                    if(overPair > 1){
+                        t.result('투페어', baseScore.pair2 + +lastPair);
                         return;
                     }
-                    // console.log(overlapNum);
-                    t.result('원페어');
+
+                    t.result('원페어', baseScore.pair1 + +lastPair);
                     return;
                     
                 }else{  //탑
-                    t.result('탑');
+                    t.result('탑', +orderedNum[orderedNum.length - 1]);
                 }
                 return;
             }
 
-            t.result = function(dd){
-                alert(dd);
+            t.result = function(title, score){
+                alert(title + '\n' + +score + '점');
             }
+        }
+
+        function transform2(){
         }
 
 

@@ -76,7 +76,12 @@
             rotiple: 240,
         }
 
-        const patternArr = ['♣', '♥', '◆', '♠'];
+
+        //한국 스>다>하>클
+        //미국 스>하>다>클
+
+        // const patternArr = ['♣', '♥', '◆', '♠'];
+        const patternArr = ['c', 'h', 'd', 's'];    //점수로인해 거꾸로
 
         function getRandomNum(mn, mx){return Math.floor(Math.random() * (mx - mn + 1)) + mn;};
         function getRandomNum2(mn, mx, arr){
@@ -132,15 +137,15 @@
                     cards[rdmNumArr[6]],
                 ];
 
-                t.pickedCards = [
-                    '7.1',
-                    '8.1',
-                    '14.1',
-                    '10.1',
-                    '11.1',
-                    '13.3',
-                    '12.1',
-                ];
+                // t.pickedCards = [
+                //     '7.1',
+                //     '8.1',
+                //     '14.1',
+                //     '10.1',
+                //     '11.1',
+                //     '13.3',
+                //     '12.1',
+                // ];
 
                 t.setUI(t.pickedCards);
 
@@ -171,7 +176,7 @@
 
                     card.innerHTML = `
                         <div class="top">${changedNum}</div>
-                        <div class="pattern">${patternArr[splitTxt(el, 1)]}</div>
+                        <div class="pattern"><img src="./assets/img/poker_${patternArr[splitTxt(el, 1)]}2.svg" alt="카드" width="10" /></div>
                         <div class="bottom">${changedNum}</div>
                     `;
 
@@ -274,7 +279,7 @@
                 let biggestNum = undefined;
                 let BackStraightFlushCnt = 0;
 
-                console.log(samePattern2[flushKey]);
+                // console.log(samePattern2[flushKey]);
 
                 if(samePattern2[flushKey]){
                     // console.log(samePattern2[flushKey]);
